@@ -3,10 +3,12 @@
 *.env
 .vscode/
 .idea/
-*.py[cod]
 __pycache__/
-*env
-*.tmp
+*.py[cod]
+db.*
 *.db
 *.sqlite3
 *.sqlte
+*.tmp
+*.code-workspace
+*.db

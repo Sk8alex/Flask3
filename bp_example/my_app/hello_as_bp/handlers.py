@@ -13,4 +13,4 @@ def hello_world():
 
 @hello.get("/show/<key>")
 def get_message(key: str):
-    return jsonify(MESSAGES.get(key) or f"URL: /show/{key} not found"), 200
+    return jsonify(MESSAGES.get(key) or f"URL: /show/{key} not found!@"), 200

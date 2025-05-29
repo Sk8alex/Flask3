@@ -4,7 +4,7 @@ from my_app import create_app
 from my_app.config import ProductionConfig
 
 
-app = create_app
+app = create_app()
 # # print(app.config)  #конфигурация по умолчанию
 # app.config.from_object("my_app.config.DevelopmentConfig")
 
