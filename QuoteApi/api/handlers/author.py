@@ -19,6 +19,22 @@ def create_author():
     return jsonify(author.to_dict()), 201
 
 
+@app.post("/authors1")
+def create_author1():
+    author_data = request.json
+    try:
+        if not all(key in author_data for key in ["name", "surname"]):
+            raise TypeError("Missing required fields: name and surname")
+        author = AuthorModel(**author_data)
+        db.session.add(author)
+        db.session.commit()
+    except TypeError as te:
+        abort(400, f"Invalid data. Required fields: name, surname. Received: {', '.join(author_data.keys())}. Error: {str(te)}")
+    except Exception as e:
+        abort(503, f"Database error: {str(e)}")
+    return jsonify(author.to_dict()), 201
+
+
 @app.get("/authors")
 def get_authors():
     authors_db = db.session.scalars(db.select(AuthorModel)).all()
