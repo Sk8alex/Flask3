@@ -16,6 +16,10 @@ db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 migrate = Migrate(app, db)
 
+from flask_marshmallow import Marshmallow
+ma = Marshmallow(app)
+
+
 # TODO. Обязательно добавить импорт для обработчиков author и quote
 
 from api.handlers import author, quote

@@ -4,6 +4,7 @@ from flask import request, abort, jsonify
 from api.models.author import AuthorModel
 from . import check
 from sqlalchemy.exc import SQLAlchemyError, InvalidRequestError
+from api.schemas.author import author_schema, authors_schema
 
 @app.post("/authors")
 def create_author():
@@ -35,11 +36,19 @@ def create_author():
 #     return jsonify(author.to_dict()), 201
 
 
-@app.get("/authors")
+@app.get("/authors") #зефирка
 def get_authors():
     authors_db = db.session.scalars(db.select(AuthorModel)).all()
-    authors = [author.to_dict() for author in authors_db]
-    return jsonify(authors), 200
+    # authors = [author.to_dict() for author in authors_db]
+    # return jsonify(authors), 200
+    return jsonify(authors_schema.dump(authors_db)),200
+
+
+# @app.get("/authors")
+# def get_authors():
+#     authors_db = db.session.scalars(db.select(AuthorModel)).all()
+#     authors = [author.to_dict() for author in authors_db]
+#     return jsonify(authors), 200
 
 
 @app.get('/authors/<int:author_id>')
