@@ -19,20 +19,20 @@ def create_author():
     return jsonify(author.to_dict()), 201
 
 
-@app.post("/authors1")
-def create_author1():
-    author_data = request.json
-    try:
-        if not all(key in author_data for key in ["name", "surname"]):
-            raise TypeError("Missing required fields: name and surname")
-        author = AuthorModel(**author_data)
-        db.session.add(author)
-        db.session.commit()
-    except TypeError as te:
-        abort(400, f"Invalid data. Required fields: name, surname. Received: {', '.join(author_data.keys())}. Error: {str(te)}")
-    except Exception as e:
-        abort(503, f"Database error: {str(e)}")
-    return jsonify(author.to_dict()), 201
+# @app.post("/authors1")
+# def create_author1():
+#     author_data = request.json
+#     try:
+#         if not all(key in author_data for key in ["name", "surname"]):
+#             raise TypeError("Missing required fields: name and surname")
+#         author = AuthorModel(**author_data)
+#         db.session.add(author)
+#         db.session.commit()
+#     except TypeError as te:
+#         abort(400, f"Invalid data. Required fields: name, surname. Received: {', '.join(author_data.keys())}. Error: {str(te)}")
+#     except Exception as e:
+#         abort(503, f"Database error: {str(e)}")
+#     return jsonify(author.to_dict()), 201
 
 
 @app.get("/authors")
@@ -53,14 +53,18 @@ def get_author_by_id(author_id: int):
 def edit_authors(author_id: int):
     """ Update an existing quote """
     new_data = request.json
-    result = new_data
-    # if not result[0]:
-    #     return abort(400, result[1].get('error'))
-    
+
+    # Проверка на пустой словарь, т.е. есть данные для обновления
+    if not new_data: # check that new_data is not {}
+        return abort(400, "No valid data to update.")
+
     author = db.get_or_404(entity=AuthorModel, ident=author_id, description=f"Author with id={author_id} not found")
 
     try:
         for key_as_attr, value in new_data.items():
+            # Проверка на лишние ключи(атрибуты)
+            if not hasattr(author, key_as_attr):
+                abort(400, f"Invalid key='{key_as_attr}'. Valid only 'name' and 'surname'")
             setattr(author, key_as_attr, value)
 
         db.session.commit()
@@ -70,7 +74,7 @@ def edit_authors(author_id: int):
         abort(503, f"Database error: {str(e)}")
 
 
-@app.route("/authors/<int:author_id>", methods=['DELETE'])
+@app.delete("/authors/<int:author_id>")
 def delete_author(author_id):
     """Delete author by id """
     author = db.get_or_404(entity=AuthorModel, ident=author_id, description=f"Author with id={author_id} not found")
