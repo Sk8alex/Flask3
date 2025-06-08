@@ -5,11 +5,17 @@ from api.models.author import AuthorModel
 from sqlalchemy.exc import SQLAlchemyError
 from api.schemas.author import author_schema, change_author_s
 
+
 @app.post("/authors")
 def create_author():
     try:
         # 1. Get raw bytes
+        # print(f'{request.data =})
+        
         # 2. Load bytes to dict
+        # author_data = author_schema.loads(request.data)
+        # print(f'{author_data = }, {type(author_data)})
+        
         # 3. Create new AuthorModel instance via dict
         # author = AuthorModel(**author_data)
         author = author_schema.loads(request.data)  # get_data() return raw bytes

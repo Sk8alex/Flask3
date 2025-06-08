@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_migrate import Migrate
+from flask_marshmallow import Marshmallow
 
 
 class Base(DeclarativeBase):
@@ -15,11 +16,10 @@ app.config.from_object("config.DevConfig")
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 migrate = Migrate(app, db)
+ma = Marshmallow()
+ma.init_app(app)
 
-from flask_marshmallow import Marshmallow
-ma = Marshmallow(app)
 
-
-# TODO. Обязательно добавить импорт для обработчиков author и quote
-
-from api.handlers import author, quote
+# DONE. Обязательно добавить импорт для обработчиков author и quote
+from api.handlers import author
+from api.handlers import quote
