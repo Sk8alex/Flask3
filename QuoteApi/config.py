@@ -1,5 +1,6 @@
 from pathlib import Path
 
+SECRET_KEY = 'supeR secret KeyS'
 
 BASE_DIR = Path(__file__).parent
 
