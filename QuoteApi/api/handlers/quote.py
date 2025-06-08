@@ -6,7 +6,7 @@ from api.models.author import AuthorModel
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError, InvalidRequestError
 from . import check
-from api.schemas.quote import quote_schema, quotes_schema
+from api.schemas.quote import quote_schema, quotes_schema, change_quotes_without_rating
 
 
 # @app.get("/quotes")
@@ -115,24 +115,24 @@ def create_quote():
 
 @app.put("/quotes/<int:quote_id>")
 def edit_quote(quote_id: int):
-    """ Update an existing quote """
-    new_data = request.json
-    result = check(new_data, check_rating=True)
-    if not result[0]:
-        return abort(400, result[1].get('error'))
-    
+    """TODO. Update edit using ma """
     quote = db.get_or_404(entity=QuoteModel, ident=quote_id, description=f"Quote with id={quote_id} not found")
 
     try:
-        for key_as_attr, value in new_data.items():
-            setattr(quote, key_as_attr, value)
+        data = quote_schema.loads(request.data)
+    except ValidationError as ve:
+        if "rating" in ve.messages_dict:
+            data = change_quotes_without_rating.loads(request.data)
 
-        db.session.commit()
-        return jsonify(quote_schema.dump(quote)), 200
+    for key_as_attr, value in data.items():
+        setattr(quote, key_as_attr, value)
+
+    try:
+        db.session.commit()   
+        return quote_schema.dump(quote), 200
     except SQLAlchemyError as e:
         db.session.rollback()
         abort(503, f"Database error: {str(e)}")
-
 
 # @app.put("/quotes/<int:quote_id>")
 # def edit_quote(quote_id: int):
