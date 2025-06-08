@@ -4,6 +4,7 @@ from sqlalchemy import String, ForeignKey
 #from api.models.author import AuthorModel
 
 
+
 class QuoteModel(db.Model):
     __tablename__ = 'quotes'
 
