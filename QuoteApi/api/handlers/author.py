@@ -1,5 +1,5 @@
 from marshmallow import ValidationError, EXCLUDE
-from api import db, app
+from api import db, app, auth
 from flask import request, abort, jsonify
 from api.models.author import AuthorModel
 from sqlalchemy.exc import SQLAlchemyError
@@ -7,6 +7,7 @@ from api.schemas.author import author_schema, change_author_s
 
 
 @app.post("/authors")
+@auth.login_required
 def create_author():
     try:
         # 1. Get raw bytes
@@ -46,6 +47,7 @@ def create_author():
 
 
 @app.get("/authors")
+@auth.login_required
 def get_authors(): #зефирка
     authors = db.session.scalars(db.select(AuthorModel)).all()
     return jsonify(author_schema.dump(authors, many=True)), 200
@@ -58,6 +60,7 @@ def get_authors(): #зефирка
 
 
 @app.get('/authors/<int:author_id>') #зефирка
+@auth.login_required
 def get_author_by_id(author_id: int):
     author = db.get_or_404(AuthorModel, author_id, description=f"Author with id={author_id} not found")
     return jsonify(author_schema.dump(author)),200
@@ -70,6 +73,7 @@ def get_author_by_id(author_id: int):
 
 
 @app.put("/authors/<int:author_id>")
+@auth.login_required
 def edit_authors(author_id: int):
     """ Update an existing quote """
     try:

@@ -20,6 +20,7 @@ from api.schemas.quote import quote_schema, quotes_schema, change_quotes_without
 
 
 @app.get("/quotes")
+@auth.login_required
 def get_quotes():
     """ Функция возвращает все цитаты из БД. """
     quotes = db.session.scalars(db.select(QuoteModel)).all()
