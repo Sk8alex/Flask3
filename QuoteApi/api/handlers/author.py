@@ -1,22 +1,19 @@
 from marshmallow import ValidationError, EXCLUDE
-from api import db, app, auth
+from api import db, app, token_auth
 from flask import request, abort, jsonify
 from api.models.author import AuthorModel
 from sqlalchemy.exc import SQLAlchemyError
-from api.schemas.author import author_schema, change_author_s
-
+from api.schemas.author import author_schema, change_author_schema
 
 @app.post("/authors")
-@auth.login_required
+@token_auth.login_required
 def create_author():
     try:
         # 1. Get raw bytes
         # print(f'{request.data =})
-        
         # 2. Load bytes to dict
         # author_data = author_schema.loads(request.data)
         # print(f'{author_data = }, {type(author_data)})
-        
         # 3. Create new AuthorModel instance via dict
         # author = AuthorModel(**author_data)
         author = author_schema.loads(request.data)  # get_data() return raw bytes
@@ -47,7 +44,6 @@ def create_author():
 
 
 @app.get("/authors")
-@auth.login_required
 def get_authors(): #зефирка
     authors = db.session.scalars(db.select(AuthorModel)).all()
     return jsonify(author_schema.dump(authors, many=True)), 200
@@ -60,7 +56,6 @@ def get_authors(): #зефирка
 
 
 @app.get('/authors/<int:author_id>') #зефирка
-@auth.login_required
 def get_author_by_id(author_id: int):
     author = db.get_or_404(AuthorModel, author_id, description=f"Author with id={author_id} not found")
     return jsonify(author_schema.dump(author)),200
@@ -73,7 +68,6 @@ def get_author_by_id(author_id: int):
 
 
 @app.put("/authors/<int:author_id>")
-@auth.login_required
 def edit_authors(author_id: int):
     """ Update an existing quote """
     try:

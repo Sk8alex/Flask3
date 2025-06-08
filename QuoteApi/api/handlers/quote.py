@@ -1,5 +1,5 @@
 from marshmallow import ValidationError
-from api import db, app, auth
+from api import db, app, multi_auth
 from flask import abort, jsonify, request
 from api.models.quote import QuoteModel
 from api.models.author import AuthorModel
@@ -20,7 +20,6 @@ from api.schemas.quote import quote_schema, quotes_schema, change_quotes_without
 
 
 @app.get("/quotes")
-@auth.login_required
 def get_quotes():
     """ Функция возвращает все цитаты из БД. """
     quotes = db.session.scalars(db.select(QuoteModel)).all()
@@ -31,10 +30,11 @@ def get_quotes():
 
 # URL: "/authors/<int:author_id>/quotes"
 @app.route("/authors/<int:author_id>/quotes", methods=["GET", "POST"])
-@auth.login_required
+@multi_auth.login_required
 def author_quotes(author_id: int):
-    print("user =", auth.current_user())
-    
+    print("user =", multi_auth.current_user())
+    print(request.headers.get('Authorization'))
+
     author = db.get_or_404(AuthorModel, author_id, description=f"Author with id={author_id} not found")
 
     if request.method == "GET":
@@ -55,7 +55,6 @@ def author_quotes(author_id: int):
         return jsonify(quote_schema.dump(new_quote)), 201
     else:
         abort(405)
-
 
 # # URL: "/authors/<int:author_id>/quotes"
 # @app.route("/authors/<int:author_id>/quotes", methods=["GET", "POST"])
