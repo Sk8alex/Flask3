@@ -66,16 +66,15 @@ def get_author_by_id(author_id: int):
 #     # instance -> dict -> json
 #     return jsonify(author.to_dict()), 200
 
-
 @app.put("/authors/<int:author_id>")
+@token_auth.login_required
 def edit_authors(author_id: int):
     """ Update an existing quote """
     try:
-        new_data = change_author_s.load(request.json,
-                                    unknown=EXCLUDE) #get json > need format
+        new_data = change_author_schema.load(request.json, unknown=EXCLUDE) # get_json() -> need load
     except ValidationError as ve:
-        return abort(400, f"Invalid data to update: {str(ve)}")
-
+        return abort(400, f"Validation error: {str(ve)}.")
+    
     # Проверка на пустой словарь, т.е. есть данные для обновления
     if not new_data: # check that new_data is not {}
         return abort(400, "No valid data to update.")
@@ -84,9 +83,6 @@ def edit_authors(author_id: int):
 
     try:
         for key_as_attr, value in new_data.items():
-            # Проверка на лишние ключи(атрибуты)
-            if not hasattr(author, key_as_attr):
-                abort(400, f"Invalid key='{key_as_attr}'. Valid only 'name' and 'surname'")
             setattr(author, key_as_attr, value)
 
         db.session.commit()
@@ -94,6 +90,34 @@ def edit_authors(author_id: int):
     except SQLAlchemyError as e:
         db.session.rollback()
         abort(503, f"Database error: {str(e)}")
+        
+# @app.put("/authors/<int:author_id>")
+# def edit_authors(author_id: int):
+#     """ Update an existing quote """
+#     try:
+#         new_data = change_author_schema.load(request.json,
+#                                     unknown=EXCLUDE) #get json > need format
+#     except ValidationError as ve:
+#         return abort(400, f"Invalid data to update: {str(ve)}")
+
+#     # Проверка на пустой словарь, т.е. есть данные для обновления
+#     if not new_data: # check that new_data is not {}
+#         return abort(400, "No valid data to update.")
+
+#     author = db.get_or_404(entity=AuthorModel, ident=author_id, description=f"Author with id={author_id} not found")
+
+#     try:
+#         for key_as_attr, value in new_data.items():
+#             # Проверка на лишние ключи(атрибуты)
+#             if not hasattr(author, key_as_attr):
+#                 abort(400, f"Invalid key='{key_as_attr}'. Valid only 'name' and 'surname'")
+#             setattr(author, key_as_attr, value)
+
+#         db.session.commit()
+#         return jsonify(author_schema.dump(author)), 200
+#     except SQLAlchemyError as e:
+#         db.session.rollback()
+#         abort(503, f"Database error: {str(e)}")
 
 
 @app.delete("/authors/<int:author_id>")

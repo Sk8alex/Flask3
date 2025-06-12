@@ -57,7 +57,9 @@ class UserModel(db.Model):
         return token
 
 
-
+    # def generate_auth_token(self):
+    #     s = URLSafeSerializer(Config.SECRET_KEY)
+    #     return s.dumps({'id': self.id})
 
     @staticmethod
     def verify_auth_token(token):
