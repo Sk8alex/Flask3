@@ -5,12 +5,14 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from flasgger import Swagger
+from apiflask import APIFlask
 
 class Base(DeclarativeBase):
     pass
 
 
-app = Flask(__name__)
+app = APIFlask(__name__, title="Qoute API", version="1.0")
+app.tags = ["Qoutes and Authors"]
 app.json.ensure_ascii = False
 app.config.from_object("config.DevConfig")
 
