@@ -3,7 +3,7 @@ from api import db, app, token_auth
 from flask import request, abort, jsonify
 from api.models.author import AuthorModel
 from sqlalchemy.exc import SQLAlchemyError
-from api.schemas.author import author_schema, change_author_schema
+from api.schemas.author import author_schema, change_author_schema, AuthorSchema, MessageOut
 
 @app.post("/authors")
 @token_auth.login_required
@@ -27,6 +27,22 @@ def create_author():
     return jsonify(author_schema.dump(author)), 201
 
 
+@app.post("/authors_api")
+@app.auth_required(token_auth)
+@app.input(AuthorSchema, arg_name="author")
+@app.output(AuthorSchema, status_code=201)
+@app.doc(summary="Create new author", description="Create new author", responses=[503], tags=["Authors"])
+def create_author_api(author):
+    try:
+        db.session.add(author)
+        db.session.commit()
+    except Exception as e:
+        abort(503, f"Database error: {str(e)}")
+    # db instance -> dict -> json
+    return author
+
+
+
 # @app.post("/authors1")
 # def create_author1():
 #     author_data = request.json
@@ -43,10 +59,18 @@ def create_author():
 #     return jsonify(author.to_dict()), 201
 
 
-@app.get("/authors")
-def get_authors(): #зефирка
-    authors = db.session.scalars(db.select(AuthorModel)).all()
-    return jsonify(author_schema.dump(authors, many=True)), 200
+@app.get("/authors_all_api")
+@app.auth_required(token_auth)
+@app.output(AuthorSchema(many=True))
+@app.doc(summary="Get all authors", description="Get all authors", tags=["Authors"])
+def get_authors_api():
+    return db.session.scalars(db.select(AuthorModel)).all(), 200
+
+
+# @app.get("/authors_api")
+# def get_authors_api(): #зефирка
+#     authors = db.session.scalars(db.select(AuthorModel)).all()
+#     return jsonify(author_schema.dump(authors, many=True)), 200
 
 # @app.get("/authors")
 # def get_authors():
@@ -128,6 +152,22 @@ def delete_author(author_id):
     try:
         db.session.commit()
         return jsonify({"message": f"Author with id {author_id} has deleted."}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        abort(503, f"Database error: {str(e)}")
+
+
+@app.delete("/authors_api/<int:author_id>")
+@app.auth_required(token_auth)
+@app.output(MessageOut)
+@app.doc(summary="Delete author by id", description="Delete author by id", tags=["Authors"], responses=[503])
+def delete_author_api(author_id):
+    """Delete author by id """
+    author = db.get_or_404(entity=AuthorModel, ident=author_id, description=f"Author with id={author_id} not found")
+    db.session.delete(author)
+    try:
+        db.session.commit()
+        return {"message": f"Author with id {author_id} has deleted."}, 200
     except SQLAlchemyError as e:
         db.session.rollback()
         abort(503, f"Database error: {str(e)}")

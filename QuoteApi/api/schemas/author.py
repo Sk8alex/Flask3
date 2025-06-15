@@ -1,6 +1,10 @@
 from api import ma
 from api.models.author import AuthorModel
 from marshmallow.validate import Length
+from apiflask import Schema
+from apiflask.fields import String
+from apiflask.validators import Length
+
 
 
 class AuthorSchema(ma.SQLAlchemyAutoSchema):
@@ -15,3 +19,6 @@ class AuthorSchema(ma.SQLAlchemyAutoSchema):
 
 author_schema = AuthorSchema()
 change_author_schema = AuthorSchema(load_instance=False, partial=True)
+
+class MessageOut(Schema):
+    message = String(required=True)

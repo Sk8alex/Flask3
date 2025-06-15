@@ -4,13 +4,14 @@ from flask import abort, jsonify, request
 from api.schemas.user import user_schema
 from marshmallow import ValidationError
 from api.schemas.user import user_schema, UserSchema
+from flask_babel import _
 
 
 @app.get('/users/<int:user_id>') #зефирка
 @app.output(UserSchema)
 @app.doc(summary="Get user by id", description="Get user by id", tags=["users"])
 def get_user_by_id(user_id: int):
-    user = db.get_or_404(UserModel, user_id, description=f"User with id={user_id} not found")
+    user = db.get_or_404(UserModel, user_id, description=_("User with id=%(user_id)s not found", user_id=user_id))
     return user,200
 
 
@@ -48,15 +49,13 @@ def create_user():
 
 
 # url:  /users - POST
-@app.post("/users1")
-def create_user1():
-    try:
-        user = user_schema.loads(request.data)
-        user.save()
-    except ValidationError as ve:
-        abort(400, f"Validation error: {ve.messages_dict}")
-    
-    return jsonify(user_schema.dump(user)), 201
+@app.post("/users_api")
+@app.input(UserSchema, arg_name='user')
+@app.output(UserSchema, status_code=201)
+@app.doc(summary="Create new user", description=_("Create new user and save to DB"), tags=["users"], responses=['400', '503'])
+def create_user_api(user):
+    user.save()
+    return user
 
 
 # def create_user():

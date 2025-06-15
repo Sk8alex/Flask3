@@ -12,3 +12,5 @@ db.*
 *.tmp
 *.code-workspace
 *.db
+*.log
+*.pot
